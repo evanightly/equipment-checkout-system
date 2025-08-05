@@ -3,6 +3,7 @@
 - execute each task carefully, provide clear and concise code, and ensure that the code adheres to best practices for maintainability and readability.
 - Use TypeScript for type safety in the React frontend.
 - Ensure that the backend API endpoints are well-documented and follow RESTful conventions.
+- No need to rebuild and server the app, i've alread use composer dev
 
 ## Project Overview: Broadcast Equipment Management System (Non-technical, PM Perspective)
 
