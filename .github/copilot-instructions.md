@@ -7,27 +7,33 @@
 ## Project Overview: Broadcast Equipment Management System (Non-technical, PM Perspective)
 
 - Broadcast Equipment Dashboard
+    - Model Name: `Equipment`
     - Displays a list of broadcast equipment (mic, mixer, recorder, tripod, etc.)
     - Statuses: Tersedia, Dipinjam, Perlu Servis, Rusak
 
 - Equipment Check-In/Check-Out Form
+    - Model Name: `EquipmentUser`
     - Borrowers log in or provide details (name, division, date, purpose)
     - Borrowing history is automatically recorded
 
-- Reports & Automated Notifications
+- Reports & Automated Notifications (Not implemented yet)
     - Monthly recap of frequently borrowed equipment
     - Notifications via internal email or WhatsApp if equipment is overdue
 
-- Multi-Level User Access
+- Multi-Level User Access (Using Spatie Laravel Permissions)
     - Admin (Technician)
     - Viewer (Editorial/Production)
     - Superadmin (Management)
 
 ## Stack:
 
-- Laravel backend with `spatie/laravel-query-builder`,
-- Inertia React frontend using `react-query` for data fetching and shadcn for ui components.
-- CQRS pattern is preferred—separate commands (mutations) and queries (data reads) into distinct concerns.
+- Laravel backend
+    - Inertia.js for seamless SPA experience.
+    - Uses Spatie Laravel Permissions for role-based access control.
+- Inertia React frontend using shadcn and magicui for ui components.
+- MariaDB for the database.
+- Tailwind CSS V5 for styling.
+- TypeScript for type safety in the frontend.
 
 ## Backend models:
 
