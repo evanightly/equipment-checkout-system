@@ -111,8 +111,8 @@ export default function RoleCreate({ permissions }: RoleCreateProps) {
                             <CardContent className='space-y-4'>
                                 {Object.entries(groupedPermissions).map(([category, perms]) => (
                                     <div key={category}>
-                                        <h4 className='mb-2 text-sm font-medium capitalize'>{category} Permissions</h4>
-                                        <div className='space-y-2 pl-4'>
+                                        {/* <h4 className='mb-2 text-sm font-medium capitalize'>{category} Permissions</h4> */}
+                                        <div className='space-y-2'>
                                             {perms.map((permission) => (
                                                 <div className='flex items-center space-x-2' key={permission.id}>
                                                     <Checkbox
