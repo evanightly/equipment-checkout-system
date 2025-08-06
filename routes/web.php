@@ -10,8 +10,13 @@ Route::get('/', [WelcomeController::class, 'index'])->name('home');
 Route::get('/api/welcome/stats', [WelcomeController::class, 'stats'])->name('welcome.stats');
 Route::get('/api/welcome/health', [WelcomeController::class, 'health'])->name('welcome.health');
 
+// Dashboard API endpoint for testing
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/dashboard/data', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard.api');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::resource('roles', App\Http\Controllers\RoleController::class);
     Route::resource('permissions', App\Http\Controllers\PermissionController::class)->only(['index', 'show']);
