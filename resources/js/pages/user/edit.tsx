@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
+import { Division } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save } from 'lucide-react';
 import React from 'react';
@@ -20,15 +21,18 @@ interface User {
     name: string;
     email: string;
     nip?: string;
+    division_id?: number;
+    division?: Division;
     roles: Array<{ name: string }>;
 }
 
 interface Props {
     user: User;
     roles: Role[];
+    divisions: Division[];
 }
 
-const EditUser: React.FC<Props> = ({ user, roles }) => {
+const EditUser: React.FC<Props> = ({ user, roles, divisions }) => {
     const { data, setData, put, processing, errors } = useForm({
         name: user.name,
         email: user.email,
@@ -36,6 +40,7 @@ const EditUser: React.FC<Props> = ({ user, roles }) => {
         password: '',
         password_confirmation: '',
         role: user.roles[0]?.name || '',
+        division_id: user.division_id?.toString() || '',
     });
 
     const selectedRole = roles.find((role) => role.value === data.role);
@@ -168,6 +173,28 @@ const EditUser: React.FC<Props> = ({ user, roles }) => {
                                         </SelectContent>
                                     </Select>
                                     {errors.role && <p className='text-sm text-red-600'>{errors.role}</p>}
+                                </div>
+
+                                {/* Division */}
+                                <div className='space-y-2'>
+                                    <Label htmlFor='division_id'>Division</Label>
+                                    <Select
+                                        onValueChange={(value) => setData('division_id', value === 'no-division' ? '' : value)}
+                                        value={data.division_id || 'no-division'}
+                                    >
+                                        <SelectTrigger className={errors.division_id ? 'border-red-500' : ''}>
+                                            <SelectValue placeholder='Select a division' />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value='no-division'>No division</SelectItem>
+                                            {divisions.map((division) => (
+                                                <SelectItem key={division.id} value={division.id.toString()}>
+                                                    {division.name} ({division.code})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.division_id && <p className='text-sm text-red-600'>{errors.division_id}</p>}
                                 </div>
 
                                 {/* Role Permissions Preview */}

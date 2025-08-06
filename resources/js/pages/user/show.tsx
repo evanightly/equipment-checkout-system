@@ -17,11 +17,20 @@ interface Role {
     permissions: Permission[];
 }
 
+interface Division {
+    id: number;
+    name: string;
+    code: string;
+    description?: string;
+}
+
 interface User {
     id: number;
     name: string;
     email: string;
     nip?: string;
+    division_id?: number;
+    division?: Division;
     created_at: string;
     updated_at: string;
     roles: Role[];
@@ -86,7 +95,6 @@ const ShowUser: React.FC<Props> = ({ user }) => {
                                 <label className='text-sm font-medium text-muted-foreground'>Name</label>
                                 <p className='text-lg font-medium'>{user.name}</p>
                             </div>
-
                             <div className='flex items-center gap-2'>
                                 <Mail className='h-4 w-4 text-muted-foreground' />
                                 <div>
@@ -94,14 +102,29 @@ const ShowUser: React.FC<Props> = ({ user }) => {
                                     <p className='font-medium'>{user.email}</p>
                                 </div>
                             </div>
-
                             {user.nip && (
                                 <div>
                                     <label className='text-sm font-medium text-muted-foreground'>NIP</label>
                                     <code className='block rounded bg-muted px-3 py-2 font-mono text-sm'>{user.nip}</code>
                                 </div>
                             )}
-
+                            <div className='flex items-center gap-2'>
+                                <IdCard className='h-4 w-4 text-muted-foreground' />
+                                <div>
+                                    <label className='text-sm font-medium text-muted-foreground'>Division</label>
+                                    {user.division ? (
+                                        <div>
+                                            <p className='font-medium'>{user.division.name}</p>
+                                            <p className='text-sm text-muted-foreground'>Code: {user.division.code}</p>
+                                            {user.division.description && (
+                                                <p className='text-sm text-muted-foreground'>{user.division.description}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className='font-medium text-muted-foreground'>No division assigned</p>
+                                    )}
+                                </div>
+                            </div>{' '}
                             <div className='flex items-center gap-2'>
                                 <Calendar className='h-4 w-4 text-muted-foreground' />
                                 <div>
@@ -117,7 +140,6 @@ const ShowUser: React.FC<Props> = ({ user }) => {
                                     </p>
                                 </div>
                             </div>
-
                             <div className='flex items-center gap-2'>
                                 <Calendar className='h-4 w-4 text-muted-foreground' />
                                 <div>

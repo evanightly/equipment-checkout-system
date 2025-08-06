@@ -5,6 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -24,6 +27,7 @@ class User extends Authenticatable
         'nip',
         'email',
         'password',
+        'division_id',
     ];
 
     /**
@@ -58,5 +62,58 @@ class User extends Authenticatable
             $q->where('name', 'like', "%{$search}%")
                 ->orWhere('email', 'like', "%{$search}%");
         });
+    }
+
+    /**
+     * Get the division this user belongs to
+     */
+    public function division(): BelongsTo
+    {
+        return $this->belongsTo(Division::class);
+    }
+
+    /**
+     * Get all equipment borrowing history for this user
+     */
+    public function borrowingHistory(): HasMany
+    {
+        return $this->hasMany(EquipmentUser::class);
+    }
+
+    /**
+     * Get currently borrowed equipment
+     */
+    public function currentlyBorrowed(): HasMany
+    {
+        return $this->hasMany(EquipmentUser::class)->where('status', 'borrowed');
+    }
+
+    /**
+     * Get equipment borrowed by this user
+     */
+    public function borrowedEquipment(): BelongsToMany
+    {
+        return $this->belongsToMany(Equipment::class, 'equipment_users')
+            ->withPivot([
+                'borrowed_at',
+                'due_date',
+                'returned_at',
+                'purpose',
+                'notes',
+                'status',
+                'return_condition',
+                'admin_notes',
+            ])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get overdue borrowings for this user
+     */
+    public function overdueBorrowings(): HasMany
+    {
+        return $this->hasMany(EquipmentUser::class)
+            ->where('status', 'borrowed')
+            ->where('due_date', '<', now());
     }
 }

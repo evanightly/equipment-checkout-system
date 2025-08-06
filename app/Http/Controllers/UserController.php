@@ -6,6 +6,7 @@ use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Division;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -38,7 +39,7 @@ class UserController extends Controller implements HasMiddleware
         $perPage = in_array($perPage, [10, 20, 30, 40, 50]) ? $perPage : 10;
 
         $users = User::query()
-            ->with(['roles'])
+            ->with(['roles', 'division'])
             ->when($request->search, function ($query, $search) {
                 $query->search($search);
             })
@@ -82,8 +83,13 @@ class UserController extends Controller implements HasMiddleware
             ];
         });
 
+        $divisions = Division::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
         return Inertia::render('user/create', [
             'roles' => $roles,
+            'divisions' => $divisions,
         ]);
     }
 
@@ -97,6 +103,7 @@ class UserController extends Controller implements HasMiddleware
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'nip' => $request->nip,
+            'division_id' => $request->division_id,
         ]);
 
         // Assign role if provided
@@ -113,7 +120,7 @@ class UserController extends Controller implements HasMiddleware
      */
     public function show(User $user): Response
     {
-        $user->load(['roles.permissions']);
+        $user->load(['roles.permissions', 'division']);
 
         return Inertia::render('user/show', [
             'user' => $user,
@@ -125,7 +132,7 @@ class UserController extends Controller implements HasMiddleware
      */
     public function edit(User $user): Response
     {
-        $user->load(['roles']);
+        $user->load(['roles', 'division']);
 
         $roles = collect(RoleEnum::cases())->map(function ($role) {
             return [
@@ -135,9 +142,14 @@ class UserController extends Controller implements HasMiddleware
             ];
         });
 
+        $divisions = Division::where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
         return Inertia::render('user/edit', [
             'user' => $user,
             'roles' => $roles,
+            'divisions' => $divisions,
         ]);
     }
 
@@ -150,6 +162,7 @@ class UserController extends Controller implements HasMiddleware
             'name' => $request->name,
             'email' => $request->email,
             'nip' => $request->nip,
+            'division_id' => $request->division_id,
         ];
 
         // Only update password if provided

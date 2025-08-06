@@ -27,6 +27,7 @@ class UpdateUserRequest extends FormRequest
             'nip' => ['nullable', 'string', 'digits:18', Rule::unique('users')->ignore($this->user)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['nullable', Rule::in(collect(RoleEnum::cases())->pluck('value'))],
+            'division_id' => ['nullable', 'exists:divisions,id'],
         ];
     }
 
@@ -45,6 +46,7 @@ class UpdateUserRequest extends FormRequest
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
             'role.in' => 'Please select a valid role.',
+            'division_id.exists' => 'Please select a valid division.',
         ];
     }
 }

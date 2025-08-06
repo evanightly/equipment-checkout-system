@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Shield, User, Users } from 'lucide-react';
+import { BookOpen, Building2, Folder, History, LayoutGrid, Package, Shield, User, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 
@@ -26,6 +26,24 @@ const allNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
         roles: ['SuperAdmin', 'Admin', 'Viewer'], // All roles can access dashboard
+    },
+    {
+        title: 'Equipment',
+        href: '/equipment',
+        icon: Package,
+        roles: ['SuperAdmin', 'Admin', 'Viewer'], // All roles can view equipment
+    },
+    {
+        title: 'Borrowing',
+        href: '/equipment-users',
+        icon: History,
+        roles: ['SuperAdmin', 'Admin', 'Viewer'], // All roles can view equipment users
+    },
+    {
+        title: 'Divisions',
+        href: '/divisions',
+        icon: Building2,
+        roles: ['SuperAdmin'], // Only SuperAdmin can manage divisions
     },
     {
         title: 'Users',

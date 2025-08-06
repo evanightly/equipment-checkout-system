@@ -27,6 +27,7 @@ class StoreUserRequest extends FormRequest
             'nip' => ['nullable', 'string', 'digits:18', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['nullable', Rule::in(collect(RoleEnum::cases())->pluck('value'))],
+            'division_id' => ['nullable', 'exists:divisions,id'],
         ];
     }
 
@@ -46,6 +47,7 @@ class StoreUserRequest extends FormRequest
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
             'role.in' => 'Please select a valid role.',
+            'division_id.exists' => 'Please select a valid division.',
         ];
     }
 }

@@ -24,11 +24,19 @@ interface Role {
     name: string;
 }
 
+interface Division {
+    id: number;
+    name: string;
+    code: string;
+}
+
 export type User = {
     id: number;
     name: string;
     email: string;
     nip?: string;
+    division_id?: number;
+    division?: Division;
     created_at: string;
     updated_at: string;
     roles: Role[];
@@ -113,6 +121,21 @@ export const columns: ColumnDef<User>[] = [
         },
     },
     {
+        accessorKey: 'division',
+        header: ({ column }) => <DataTableColumnHeader column={column} title='Division' />,
+        cell: ({ row }) => {
+            const user = row.original;
+            return user.division ? (
+                <div className='flex flex-col'>
+                    <span className='font-medium'>{user.division.name}</span>
+                    <span className='text-sm text-muted-foreground'>{user.division.code}</span>
+                </div>
+            ) : (
+                <span className='text-muted-foreground'>No division</span>
+            );
+        },
+    },
+    {
         accessorKey: 'roles',
         header: 'Roles',
         cell: ({ row }) => {
@@ -144,7 +167,7 @@ export const columns: ColumnDef<User>[] = [
     },
     {
         id: 'actions',
-        header: () => <div className='text-right pr-2'>Actions</div>,
+        header: () => <div className='pr-2 text-right'>Actions</div>,
         cell: ({ row }) => {
             const user = row.original;
             return (

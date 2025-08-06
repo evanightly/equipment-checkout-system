@@ -17,7 +17,13 @@ class DatabaseSeeder extends Seeder
         // First, create roles and permissions
         $this->call(RolePermissionSeeder::class);
 
-        User::factory(100)->create();
+        // Create divisions
+        $this->call(DivisionSeeder::class);
+
+        // Create equipment
+        $this->call(EquipmentSeeder::class);
+
+        User::factory(25)->create();
 
         // Create test users with both email and NIP (18 digits)
         $testUser = User::factory()->create([

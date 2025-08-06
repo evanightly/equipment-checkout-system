@@ -10,6 +10,12 @@ enum PermissionEnum: string
     case EQUIPMENT_UPDATE = 'Equipment::Update';
     case EQUIPMENT_DELETE = 'Equipment::Delete';
 
+    // Division permissions
+    case DIVISION_READ = 'Division::Read';
+    case DIVISION_CREATE = 'Division::Create';
+    case DIVISION_UPDATE = 'Division::Update';
+    case DIVISION_DELETE = 'Division::Delete';
+
     // User permissions
     case USER_READ = 'User::Read';
     case USER_CREATE = 'User::Create';
@@ -35,6 +41,16 @@ enum PermissionEnum: string
             self::EQUIPMENT_CREATE,
             self::EQUIPMENT_UPDATE,
             self::EQUIPMENT_DELETE,
+        ];
+    }
+
+    public static function divisionPermissions(): array
+    {
+        return [
+            self::DIVISION_READ,
+            self::DIVISION_CREATE,
+            self::DIVISION_UPDATE,
+            self::DIVISION_DELETE,
         ];
     }
 
@@ -72,6 +88,7 @@ enum PermissionEnum: string
     {
         return array_merge(
             self::equipmentPermissions(),
+            self::divisionPermissions(),
             self::userPermissions(),
             self::permissionPermissions(),
             self::rolePermissions()
