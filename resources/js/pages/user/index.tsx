@@ -1,13 +1,11 @@
+import { FilterFieldConfig, StandardFilters } from '@/components/standard-filters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InertiaDataTable } from '@/components/ui/inertia-data-table';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { PaginateResponse } from '@/support/interfaces/others';
-import { Head, Link, router } from '@inertiajs/react';
-import { Filter, Plus, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { columns, User } from './columns';
 
 interface UserIndexProps {
@@ -24,32 +22,22 @@ interface UserIndexProps {
 }
 
 export default function UserIndex({ users, roles, filters }: UserIndexProps) {
-    const [searchTerm, setSearchTerm] = useState(filters.search || '');
-    const [selectedRole, setSelectedRole] = useState(filters.role || 'all');
-
-    const handleSearch = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentPerPage = urlParams.get('per_page');
-
-        router.get(
-            route('users.index'),
-            {
-                search: searchTerm || undefined,
-                role: selectedRole === 'all' ? undefined : selectedRole,
-                per_page: currentPerPage || undefined,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-    };
-
-    const handleClearFilters = () => {
-        setSearchTerm('');
-        setSelectedRole('all');
-        router.get(route('users.index'));
-    };
+    // Configure filter fields for StandardFilters
+    const filterFields: FilterFieldConfig[] = [
+        {
+            key: 'search',
+            label: 'Search Users',
+            type: 'search',
+            placeholder: 'Search users...',
+        },
+        {
+            key: 'role',
+            label: 'Role',
+            type: 'select',
+            allLabel: 'All roles',
+            options: roles,
+        },
+    ];
 
     return (
         <AppLayout>
@@ -71,56 +59,14 @@ export default function UserIndex({ users, roles, filters }: UserIndexProps) {
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className='flex items-center gap-2'>
-                            <Filter className='h-5 w-5' />
-                            Filters
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className='flex items-end gap-4'>
-                            <div className='flex-1'>
-                                <label className='mb-2 block text-sm font-medium'>Search</label>
-                                <div className='relative'>
-                                    <Search className='absolute top-3 left-3 h-4 w-4 text-muted-foreground' />
-                                    <Input
-                                        className='pl-10'
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                        placeholder='Search by name or email...'
-                                        value={searchTerm}
-                                    />
-                                </div>
-                            </div>
-                            <div className='w-48'>
-                                <label className='mb-2 block text-sm font-medium'>Role</label>
-                                <Select onValueChange={setSelectedRole} value={selectedRole}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder='All roles' />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value='all'>All roles</SelectItem>
-                                        {roles.map((role) => (
-                                            <SelectItem key={role.value} value={role.value}>
-                                                {role.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className='flex gap-2'>
-                                <Button onClick={handleSearch}>
-                                    <Search className='mr-2 h-4 w-4' />
-                                    Search
-                                </Button>
-                                <Button onClick={handleClearFilters} variant='outline'>
-                                    Clear
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <StandardFilters
+                    fields={filterFields}
+                    filters={{
+                        search: filters.search,
+                        role: filters.role,
+                    }}
+                    routeName='users.index'
+                />
 
                 {/* Users DataTable */}
                 <Card>

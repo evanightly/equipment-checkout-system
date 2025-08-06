@@ -2,8 +2,12 @@
 
 namespace App\Enums;
 
+use App\Traits\EnumToArray;
+
 enum PermissionEnum: string
 {
+    use EnumToArray;
+
     // Equipment permissions
     case EQUIPMENT_READ = 'Equipment::Read';
     case EQUIPMENT_CREATE = 'Equipment::Create';

@@ -1,13 +1,11 @@
+import { FilterFieldConfig, StandardFilters } from '@/components/standard-filters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InertiaDataTable } from '@/components/ui/inertia-data-table';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { PaginateResponse } from '@/support/interfaces/others';
-import { Head, Link, router } from '@inertiajs/react';
-import { Building2, Filter, Plus, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { Building2, Plus } from 'lucide-react';
 import { columns, Division } from './columns';
 
 interface DivisionIndexProps {
@@ -20,32 +18,25 @@ interface DivisionIndexProps {
 }
 
 export default function DivisionIndex({ divisions, filters }: DivisionIndexProps) {
-    const [searchTerm, setSearchTerm] = useState(filters.search || '');
-    const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
-
-    const handleSearch = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentPerPage = urlParams.get('per_page');
-
-        router.get(
-            route('divisions.index'),
-            {
-                search: searchTerm || undefined,
-                status: selectedStatus === 'all' ? undefined : selectedStatus,
-                per_page: currentPerPage || undefined,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-    };
-
-    const handleClearFilters = () => {
-        setSearchTerm('');
-        setSelectedStatus('all');
-        router.get(route('divisions.index'));
-    };
+    // Configure filter fields for StandardFilters
+    const filterFields: FilterFieldConfig[] = [
+        {
+            key: 'search',
+            label: 'Search Divisions',
+            type: 'search',
+            placeholder: 'Search divisions...',
+        },
+        {
+            key: 'status',
+            label: 'Status',
+            type: 'select',
+            allLabel: 'All statuses',
+            options: [
+                { value: 'active', label: 'Active' },
+                { value: 'inactive', label: 'Inactive' },
+            ],
+        },
+    ];
 
     return (
         <AppLayout>
@@ -67,53 +58,14 @@ export default function DivisionIndex({ divisions, filters }: DivisionIndexProps
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className='flex items-center gap-2'>
-                            <Filter className='h-5 w-5' />
-                            Filters
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className='flex items-end gap-4'>
-                            <div className='flex-1'>
-                                <label className='mb-2 block text-sm font-medium'>Search</label>
-                                <div className='relative'>
-                                    <Search className='absolute top-3 left-3 h-4 w-4 text-muted-foreground' />
-                                    <Input
-                                        className='pl-10'
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                        placeholder='Search by name, code, or description...'
-                                        value={searchTerm}
-                                    />
-                                </div>
-                            </div>
-                            <div className='w-48'>
-                                <label className='mb-2 block text-sm font-medium'>Status</label>
-                                <Select onValueChange={setSelectedStatus} value={selectedStatus}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder='All statuses' />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value='all'>All statuses</SelectItem>
-                                        <SelectItem value='active'>Active</SelectItem>
-                                        <SelectItem value='inactive'>Inactive</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className='flex gap-2'>
-                                <Button onClick={handleSearch}>
-                                    <Search className='mr-2 h-4 w-4' />
-                                    Search
-                                </Button>
-                                <Button onClick={handleClearFilters} variant='outline'>
-                                    Clear
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <StandardFilters
+                    fields={filterFields}
+                    filters={{
+                        search: filters.search,
+                        status: filters.status,
+                    }}
+                    routeName='divisions.index'
+                />
 
                 {/* Divisions DataTable */}
                 <Card>

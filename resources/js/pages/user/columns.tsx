@@ -1,23 +1,9 @@
 'use client';
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { useToast } from '@/hooks/use-toast';
-import { Link, router } from '@inertiajs/react';
+import { UserActions } from '@/components/user-actions';
 import { ColumnDef } from '@tanstack/react-table';
-import { Edit, Eye, Trash2 } from 'lucide-react';
 
 interface Role {
     id: number;
@@ -53,52 +39,6 @@ const getRoleBadgeVariant = (roleName: string) => {
         default:
             return 'outline' as const;
     }
-};
-
-const DeleteUserDialog = ({ user }: { user: User }) => {
-    const { toast } = useToast();
-
-    const handleDelete = () => {
-        router.delete(route('users.destroy', user.id), {
-            onSuccess: () => {
-                toast({
-                    title: 'Success',
-                    description: 'User deleted successfully.',
-                });
-            },
-            onError: (errors) => {
-                toast({
-                    title: 'Error',
-                    description: errors.message || 'Failed to delete user.',
-                    variant: 'destructive',
-                });
-            },
-        });
-    };
-
-    return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button className='text-red-600 hover:text-red-800' size='sm' variant='ghost'>
-                    <Trash2 className='h-4 w-4' />
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Delete User</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Are you sure you want to delete <strong>{user.name}</strong>? This action cannot be undone.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className='bg-red-600 hover:bg-red-700' onClick={handleDelete}>
-                        Delete
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    );
 };
 
 export const columns: ColumnDef<User>[] = [
@@ -167,24 +107,9 @@ export const columns: ColumnDef<User>[] = [
     },
     {
         id: 'actions',
-        header: () => <div className='pr-2 text-right'>Actions</div>,
         cell: ({ row }) => {
             const user = row.original;
-            return (
-                <div className='flex justify-end space-x-2 text-right'>
-                    <Link href={route('users.show', user.id)}>
-                        <Button size='sm' variant='ghost'>
-                            <Eye className='h-4 w-4' />
-                        </Button>
-                    </Link>
-                    <Link href={route('users.edit', user.id)}>
-                        <Button size='sm' variant='ghost'>
-                            <Edit className='h-4 w-4' />
-                        </Button>
-                    </Link>
-                    <DeleteUserDialog user={user} />
-                </div>
-            );
+            return <UserActions user={user} />;
         },
     },
 ];

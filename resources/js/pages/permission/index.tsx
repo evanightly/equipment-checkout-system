@@ -1,12 +1,9 @@
-import { Button } from '@/components/ui/button';
+import { FilterFieldConfig, StandardFilters } from '@/components/standard-filters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InertiaDataTable } from '@/components/ui/inertia-data-table';
-import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/app-layout';
 import { PaginateResponse } from '@/support/interfaces/others';
-import { Head, router } from '@inertiajs/react';
-import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { Head } from '@inertiajs/react';
 import { columns, Permission } from './columns';
 
 interface PermissionIndexProps {
@@ -18,29 +15,15 @@ interface PermissionIndexProps {
 }
 
 export default function PermissionIndex({ permissions, filters }: PermissionIndexProps) {
-    const [searchTerm, setSearchTerm] = useState(filters.search || '');
-
-    const handleSearch = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const currentPerPage = urlParams.get('per_page');
-
-        router.get(
-            route('permissions.index'),
-            {
-                search: searchTerm || undefined,
-                per_page: currentPerPage || undefined,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-            },
-        );
-    };
-
-    const handleClearFilters = () => {
-        setSearchTerm('');
-        router.get(route('permissions.index'));
-    };
+    // Configure filter fields for StandardFilters
+    const filterFields: FilterFieldConfig[] = [
+        {
+            key: 'search',
+            label: 'Search Permissions',
+            type: 'search',
+            placeholder: 'Search permissions...',
+        },
+    ];
 
     return (
         <AppLayout>
@@ -56,40 +39,13 @@ export default function PermissionIndex({ permissions, filters }: PermissionInde
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className='flex items-center gap-2'>
-                            <Search className='h-5 w-5' />
-                            Search & Filter
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className='flex flex-col gap-4 sm:flex-row sm:items-end'>
-                            <div className='flex-1'>
-                                <label className='mb-2 block text-sm font-medium'>Search</label>
-                                <div className='relative'>
-                                    <Search className='absolute top-3 left-3 h-4 w-4 text-muted-foreground' />
-                                    <Input
-                                        className='pl-10'
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                        placeholder='Search by permission name...'
-                                        value={searchTerm}
-                                    />
-                                </div>
-                            </div>
-                            <div className='flex gap-2'>
-                                <Button onClick={handleSearch}>
-                                    <Search className='mr-2 h-4 w-4' />
-                                    Search
-                                </Button>
-                                <Button onClick={handleClearFilters} variant='outline'>
-                                    Clear
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                <StandardFilters
+                    fields={filterFields}
+                    filters={{
+                        search: filters.search,
+                    }}
+                    routeName='permissions.index'
+                />
 
                 {/* Permissions DataTable */}
                 <Card>

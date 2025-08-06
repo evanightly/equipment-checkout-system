@@ -1,11 +1,9 @@
 'use client';
 
+import { PermissionActions } from '@/components/permission-actions';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { Link } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye } from 'lucide-react';
 
 interface Role {
     id: number;
@@ -57,18 +55,9 @@ export const columns: ColumnDef<Permission>[] = [
     },
     {
         id: 'actions',
-        header: () => <div className='text-right'>Actions</div>,
         cell: ({ row }) => {
             const permission = row.original;
-            return (
-                <div className='flex justify-end space-x-2 text-right'>
-                    <Link href={route('permissions.show', permission.id)}>
-                        <Button size='sm' variant='ghost'>
-                            <Eye className='h-4 w-4' />
-                        </Button>
-                    </Link>
-                </div>
-            );
+            return <PermissionActions permission={permission} />;
         },
     },
 ];

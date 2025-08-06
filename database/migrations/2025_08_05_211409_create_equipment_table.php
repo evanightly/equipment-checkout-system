@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\EquipmentStatusEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,12 +21,15 @@ return new class extends Migration
             $table->string('brand')->nullable();
             $table->string('model')->nullable();
             $table->string('serial_number')->nullable()->unique();
-            $table->enum('status', ['Tersedia', 'Dipinjam', 'Perlu Servis', 'Rusak'])->default('Tersedia');
+            $table->enum('status', EquipmentStatusEnum::toArray())->default(EquipmentStatusEnum::AVAILABLE->value);
             $table->decimal('purchase_price', 10, 2)->nullable();
             $table->date('purchase_date')->nullable();
             $table->text('notes')->nullable();
             $table->string('location')->nullable(); // Storage location
             $table->boolean('is_active')->default(true);
+            $table->foreignId('current_borrower_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->timestamp('borrowed_at')->nullable();
+            $table->timestamp('current_due_date')->nullable();
             $table->timestamps();
         });
     }

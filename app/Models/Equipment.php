@@ -6,7 +6,6 @@ use App\Enums\EquipmentStatusEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Equipment extends Model
 {
@@ -28,12 +27,17 @@ class Equipment extends Model
         'location',
         'is_active',
         'is_available_for_borrowing',
+        'current_borrower_id',
+        'borrowed_at',
+        'current_due_date',
     ];
 
     protected $casts = [
         'purchase_price' => 'decimal:2',
         'purchase_date' => 'date',
         'warranty_expires_at' => 'date',
+        'borrowed_at' => 'datetime',
+        'current_due_date' => 'datetime',
         'is_active' => 'boolean',
         'is_available_for_borrowing' => 'boolean',
     ];
@@ -47,19 +51,23 @@ class Equipment extends Model
     }
 
     /**
-     * Get all borrowing records for this equipment
+     * Get all borrowing records for this equipment through details
      */
-    public function borrowingHistory(): HasMany
+    public function borrowingHistory()
     {
-        return $this->hasMany(EquipmentUser::class);
+        return $this->belongsToMany(EquipmentUser::class, 'equipment_user_details')
+            ->withTimestamps();
     }
 
     /**
      * Get current borrowing record (if equipment is borrowed)
      */
-    public function currentBorrowing(): HasMany
+    public function currentBorrowing()
     {
-        return $this->hasMany(EquipmentUser::class)->where('status', 'borrowed');
+        return $this->belongsToMany(EquipmentUser::class, 'equipment_user_details')
+            ->where('status', 'approved')
+            ->whereNull('returned_at')
+            ->withTimestamps();
     }
 
     /**
@@ -94,7 +102,7 @@ class Equipment extends Model
      */
     public function isBorrowed(): bool
     {
-        return $this->status === EquipmentStatusEnum::BORROWED->value && $this->currentBorrowing()->exists();
+        return $this->status === EquipmentStatusEnum::BORROWED->value && ! is_null($this->current_borrower_id);
     }
 
     /**
@@ -102,7 +110,9 @@ class Equipment extends Model
      */
     public function isAvailable(): bool
     {
-        return $this->status === EquipmentStatusEnum::AVAILABLE->value && $this->is_active;
+        return $this->status === EquipmentStatusEnum::AVAILABLE->value &&
+               $this->is_active &&
+               is_null($this->current_borrower_id);
     }
 
     /**
@@ -126,5 +136,37 @@ class Equipment extends Model
             EquipmentStatusEnum::RETIRED->value => 'secondary',
             default => 'secondary',
         };
+    }
+
+    /**
+     * Get current borrower name (for display purposes)
+     */
+    public function getCurrentBorrowerName(): ?string
+    {
+        return $this->currentBorrower?->name;
+    }
+
+    /**
+     * Get formatted borrowed duration
+     */
+    public function getBorrowedDuration(): ?string
+    {
+        if (! $this->borrowed_at || ! $this->isBorrowed()) {
+            return null;
+        }
+
+        $days = $this->borrowed_at->diffInDays(now());
+
+        return $days === 0 ? 'Today' : "{$days} days ago";
+    }
+
+    /**
+     * Check if equipment is overdue
+     */
+    public function isOverdue(): bool
+    {
+        return $this->isBorrowed() &&
+               $this->current_due_date &&
+               $this->current_due_date->isPast();
     }
 }

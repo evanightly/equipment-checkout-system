@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\BorrowingStatusEnum;
+use App\Enums\EquipmentStatusEnum;
 use App\Enums\PermissionEnum;
 use App\Enums\RoleEnum;
 use App\Models\Equipment;
@@ -61,8 +62,9 @@ class EquipmentUserController extends Controller implements HasMiddleware
         $borrowings = $query->paginate(10)->withQueryString();
 
         // Get equipment available for borrowing
-        $availableEquipment = Equipment::where('status', 'available')
+        $availableEquipment = Equipment::where('status', EquipmentStatusEnum::AVAILABLE->value)
             ->where('is_available_for_borrowing', true)
+            ->whereNull('current_borrower_id') // Double check no one has it borrowed
             ->with('division')
             ->orderBy('name')
             ->get();
@@ -80,8 +82,9 @@ class EquipmentUserController extends Controller implements HasMiddleware
      */
     public function create()
     {
-        $availableEquipment = Equipment::where('status', 'available')
+        $availableEquipment = Equipment::where('status', EquipmentStatusEnum::AVAILABLE->value)
             ->where('is_available_for_borrowing', true)
+            ->whereNull('current_borrower_id')
             ->with('division')
             ->orderBy('name')
             ->get();
@@ -109,8 +112,9 @@ class EquipmentUserController extends Controller implements HasMiddleware
         // Check if all equipment is still available
         $unavailableEquipment = Equipment::whereIn('id', $equipmentIds)
             ->where(function ($query) {
-                $query->where('status', '!=', 'available')
-                    ->orWhere('is_available_for_borrowing', false);
+                $query->where('status', '!=', EquipmentStatusEnum::AVAILABLE->value)
+                    ->orWhere('is_available_for_borrowing', false)
+                    ->orWhereNotNull('current_borrower_id');
             })
             ->get();
 
@@ -120,9 +124,8 @@ class EquipmentUserController extends Controller implements HasMiddleware
                     $unavailableEquipment->pluck('name')->join(', '));
         }
 
-        // Create the main borrowing record
+        // Create the main borrowing record (without equipment_id for new approach)
         $equipmentUser = EquipmentUser::create([
-            'equipment_id' => $equipmentIds[0], // Keep the first equipment for backward compatibility
             'user_id' => Auth::id(),
             'purpose' => $request->input('purpose'),
             'due_date' => $request->input('due_date'),
@@ -176,10 +179,12 @@ class EquipmentUserController extends Controller implements HasMiddleware
         // Load equipment details relationship
         $borrowing->load('equipmentUserDetails.equipment');
 
-        // Check if equipment is still available
-        if (! $borrowing->equipment->is_available_for_borrowing) {
-            return redirect()->back()
-                ->with('error', 'Equipment is no longer available for borrowing.');
+        // Check if equipment is still available for all equipment in details
+        foreach ($borrowing->equipmentUserDetails as $detail) {
+            if ($detail->equipment && ! $detail->equipment->is_available_for_borrowing) {
+                return redirect()->back()
+                    ->with('error', 'Equipment "'.$detail->equipment->name.'" is no longer available for borrowing.');
+            }
         }
 
         $borrowing->update([
@@ -189,16 +194,15 @@ class EquipmentUserController extends Controller implements HasMiddleware
         ]);
 
         // Update equipment status for all equipment in this borrowing
-        if ($borrowing->equipmentUserDetails->isNotEmpty()) {
-            // Update all equipment from details
-            foreach ($borrowing->equipmentUserDetails as $detail) {
-                if ($detail->equipment) {
-                    $detail->equipment->update(['status' => 'borrowed']);
-                }
+        foreach ($borrowing->equipmentUserDetails as $detail) {
+            if ($detail->equipment) {
+                $detail->equipment->update([
+                    'status' => EquipmentStatusEnum::BORROWED->value,
+                    'current_borrower_id' => $borrowing->user_id,
+                    'borrowed_at' => now(),
+                    'current_due_date' => $borrowing->due_date,
+                ]);
             }
-        } else {
-            // Fallback to main equipment for backward compatibility
-            $borrowing->equipment->update(['status' => 'borrowed']);
         }
 
         return redirect()->back()
@@ -249,19 +253,19 @@ class EquipmentUserController extends Controller implements HasMiddleware
         $borrowing->update([
             'status' => BorrowingStatusEnum::RETURNED->value,
             'returned_at' => now(),
+            'returned_to' => Auth::id(),
         ]);
 
         // Update equipment status back to available for all equipment
-        if ($borrowing->equipmentUserDetails->isNotEmpty()) {
-            // Update all equipment from details
-            foreach ($borrowing->equipmentUserDetails as $detail) {
-                if ($detail->equipment) {
-                    $detail->equipment->update(['status' => 'available']);
-                }
+        foreach ($borrowing->equipmentUserDetails as $detail) {
+            if ($detail->equipment) {
+                $detail->equipment->update([
+                    'status' => EquipmentStatusEnum::AVAILABLE->value,
+                    'current_borrower_id' => null,
+                    'borrowed_at' => null,
+                    'current_due_date' => null,
+                ]);
             }
-        } else {
-            // Fallback to main equipment for backward compatibility
-            $borrowing->equipment->update(['status' => 'available']);
         }
 
         return redirect()->back()

@@ -2,8 +2,11 @@
 
 namespace App\Enums;
 
+use App\Traits\EnumToArray;
+
 enum BorrowingStatusEnum: string
 {
+    use EnumToArray;
     case PENDING = 'pending';
     case APPROVED = 'approved';
     case BORROWED = 'borrowed';

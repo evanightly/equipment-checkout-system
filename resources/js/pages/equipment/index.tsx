@@ -1,14 +1,11 @@
-import { Badge } from '@/components/ui/badge';
+import { FilterFieldConfig, StandardFilters } from '@/components/standard-filters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InertiaDataTable } from '@/components/ui/inertia-data-table';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { Division, Equipment } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { Filter, Plus, Search } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
 import { columns } from './columns';
 
 interface Props {
@@ -34,36 +31,47 @@ interface Props {
 }
 
 export default function EquipmentIndex({ equipment, divisions, types, filters, statuses }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const [status, setStatus] = useState(filters.status || 'all');
-    const [type, setType] = useState(filters.type || 'all');
-    const [divisionId, setDivisionId] = useState(filters.division_id || 'all');
-
-    const handleSearch = () => {
-        router.get(
-            route('equipment.index'),
-            {
-                search: search || undefined,
-                status: status !== 'all' ? status : undefined,
-                type: type !== 'all' ? type : undefined,
-                division_id: divisionId !== 'all' ? divisionId : undefined,
-            },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
-
-    const clearFilters = () => {
-        setSearch('');
-        setStatus('all');
-        setType('all');
-        setDivisionId('all');
-        router.get(route('equipment.index'), {}, { replace: true });
-    };
-
-    const hasActiveFilters = search || status !== 'all' || type !== 'all' || divisionId !== 'all';
+    console.log(equipment);
+    
+    // Configure filter fields for StandardFilters
+    const filterFields: FilterFieldConfig[] = [
+        {
+            key: 'search',
+            label: 'Search Equipment',
+            type: 'search',
+            placeholder: 'Search equipment...',
+        },
+        {
+            key: 'status',
+            label: 'Status',
+            type: 'select',
+            allLabel: 'All statuses',
+            options: statuses.map((status) => ({
+                value: status.value,
+                label: status.name,
+            })),
+        },
+        {
+            key: 'type',
+            label: 'Type',
+            type: 'select',
+            allLabel: 'All types',
+            options: types.map((type) => ({
+                value: type,
+                label: type,
+            })),
+        },
+        {
+            key: 'division_id',
+            label: 'Division',
+            type: 'select',
+            allLabel: 'All divisions',
+            options: divisions.map((division) => ({
+                value: division.id.toString(),
+                label: division.name,
+            })),
+        },
+    ];
 
     return (
         <AppLayout>
@@ -123,101 +131,7 @@ export default function EquipmentIndex({ equipment, divisions, types, filters, s
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className='flex items-center'>
-                            <Filter className='mr-2 h-4 w-4' />
-                            Filters
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-5'>
-                            <div className='relative'>
-                                <Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-                                <Input
-                                    className='pl-9'
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    placeholder='Search equipment...'
-                                    value={search}
-                                />
-                            </div>
-                            <Select onValueChange={setStatus} value={status}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder='All statuses' />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value='all'>All statuses</SelectItem>
-                                    {statuses.map((statusOption) => (
-                                        <SelectItem key={statusOption.value} value={statusOption.value}>
-                                            {statusOption.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select onValueChange={setType} value={type}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder='All types' />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value='all'>All types</SelectItem>
-                                    {types.map((typeOption) => (
-                                        <SelectItem key={typeOption} value={typeOption}>
-                                            {typeOption}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <Select onValueChange={setDivisionId} value={divisionId}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder='All divisions' />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value='all'>All divisions</SelectItem>
-                                    {divisions.map((division) => (
-                                        <SelectItem key={division.id} value={division.id.toString()}>
-                                            {division.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <div className='flex space-x-2'>
-                                <Button onClick={handleSearch} size='sm'>
-                                    Search
-                                </Button>
-                                {hasActiveFilters && (
-                                    <Button onClick={clearFilters} size='sm' variant='outline'>
-                                        Clear
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                        {hasActiveFilters && (
-                            <div className='mt-4 flex flex-wrap gap-2'>
-                                {search && (
-                                    <Badge className='flex items-center gap-1' variant='secondary'>
-                                        Search: {search}
-                                    </Badge>
-                                )}
-                                {status && (
-                                    <Badge className='flex items-center gap-1' variant='secondary'>
-                                        Status: {statuses.find((s) => s.value === status)?.name}
-                                    </Badge>
-                                )}
-                                {type && (
-                                    <Badge className='flex items-center gap-1' variant='secondary'>
-                                        Type: {type}
-                                    </Badge>
-                                )}
-                                {divisionId && (
-                                    <Badge className='flex items-center gap-1' variant='secondary'>
-                                        Division: {divisions.find((d) => d.id.toString() === divisionId)?.name}
-                                    </Badge>
-                                )}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                <StandardFilters fields={filterFields} filters={filters} routeName='equipment.index' />
 
                 {/* Equipment Table */}
                 <Card>

@@ -1,3 +1,7 @@
+## Project Status: Development Phase
+
+This means modifying existing migration schema is allowed, and the project is not yet in production.
+
 ## Rules:
 
 - execute each task carefully, provide clear and concise code, and ensure that the code adheres to best practices for maintainability and readability.

@@ -2,8 +2,11 @@
 
 namespace App\Enums;
 
+use App\Traits\EnumToArray;
+
 enum RoleEnum: string
 {
+    use EnumToArray;
     case SUPER_ADMIN = 'SuperAdmin';
     case ADMIN = 'Admin';
     case VIEWER = 'Viewer';

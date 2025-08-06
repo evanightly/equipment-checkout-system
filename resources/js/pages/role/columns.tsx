@@ -1,23 +1,9 @@
 'use client';
 
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { RoleActions } from '@/components/role-actions';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { DataTableColumnHeader } from '@/components/ui/data-table-column-header';
-import { useToast } from '@/hooks/use-toast';
-import { Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { Edit, Eye, Trash2 } from 'lucide-react';
 
 interface Permission {
     id: number;
@@ -32,55 +18,6 @@ export type Role = {
     updated_at: string;
     permissions: Permission[];
     users_count: number;
-};
-
-const DeleteRoleDialog = ({ role }: { role: Role }) => {
-    const { toast } = useToast();
-
-    const handleDelete = () => {
-        router.delete(route('roles.destroy', role.id), {
-            onSuccess: () => {
-                toast({
-                    title: 'Success',
-                    description: 'Role deleted successfully.',
-                });
-            },
-            onError: (errors) => {
-                toast({
-                    title: 'Error',
-                    description: errors.message || 'Failed to delete role.',
-                    variant: 'destructive',
-                });
-            },
-        });
-    };
-
-    return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>
-                <Button className='text-red-600 hover:text-red-800' size='sm' variant='ghost'>
-                    <Trash2 className='h-4 w-4' />
-                </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Role</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Are you sure you want to delete the role <strong>{role.name}</strong>? This action cannot be undone.
-                        {role.users_count > 0 && (
-                            <span className='mt-2 block font-medium text-red-600'>Warning: This role is assigned to {role.users_count} user(s).</span>
-                        )}
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction className='bg-red-600 hover:bg-red-700' onClick={handleDelete}>
-                        Delete
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
-    );
 };
 
 export const columns: ColumnDef<Role>[] = [
@@ -141,24 +78,9 @@ export const columns: ColumnDef<Role>[] = [
     },
     {
         id: 'actions',
-        header: () => <div className='text-right'>Actions</div>,
         cell: ({ row }) => {
             const role = row.original;
-            return (
-                <div className='flex justify-end space-x-2 text-right'>
-                    <Link href={route('roles.show', role.id)}>
-                        <Button size='sm' variant='ghost'>
-                            <Eye className='h-4 w-4' />
-                        </Button>
-                    </Link>
-                    <Link href={route('roles.edit', role.id)}>
-                        <Button size='sm' variant='ghost'>
-                            <Edit className='h-4 w-4' />
-                        </Button>
-                    </Link>
-                    <DeleteRoleDialog role={role} />
-                </div>
-            );
+            return <RoleActions role={role} />;
         },
     },
 ];

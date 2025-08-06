@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useConfirmation } from '@/hooks/use-confirmation';
 import AppLayout from '@/layouts/app-layout';
 import { EquipmentUser } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -14,7 +15,8 @@ interface Props {
     canManage: boolean;
 }
 
-export default function ShowBorrowing({ borrowing, canManage }: Props) {
+export default function EquipmentUserShow({ borrowing, canManage }: Props) {
+    const { confirmApprove, confirmReject, confirmReturn } = useConfirmation();
     const isOverdue = borrowing.status === 'approved' && new Date(borrowing.due_date) < new Date() && !borrowing.returned_at;
 
     const getStatusVariant = (status: string) => {
@@ -49,20 +51,26 @@ export default function ShowBorrowing({ borrowing, canManage }: Props) {
         }
     };
 
-    const handleApprove = () => {
-        if (confirm('Are you sure you want to approve this borrowing request?')) {
+    const handleApprove = async () => {
+        const equipmentName = borrowing.equipment?.name || 'this request';
+        const result = await confirmApprove(equipmentName);
+        if (result.confirmed) {
             router.patch(route('equipment-users.approve', borrowing.id));
         }
     };
 
-    const handleReject = () => {
-        if (confirm('Are you sure you want to reject this borrowing request?')) {
+    const handleReject = async () => {
+        const equipmentName = borrowing.equipment?.name || 'this request';
+        const result = await confirmReject(equipmentName);
+        if (result.confirmed) {
             router.patch(route('equipment-users.reject', borrowing.id));
         }
     };
 
-    const handleReturn = () => {
-        if (confirm('Mark this equipment as returned?')) {
+    const handleReturn = async () => {
+        const equipmentName = borrowing.equipment?.name || 'this equipment';
+        const result = await confirmReturn(equipmentName);
+        if (result.confirmed) {
             router.patch(route('equipment-users.return', borrowing.id));
         }
     };

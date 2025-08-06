@@ -1,14 +1,11 @@
-import { Badge } from '@/components/ui/badge';
+import { StandardFilters } from '@/components/standard-filters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { InertiaDataTable } from '@/components/ui/inertia-data-table';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import { Equipment, EquipmentUser } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
-import { CheckCircle, Clock, Filter, History, Plus, Search, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link } from '@inertiajs/react';
+import { CheckCircle, Clock, History, Plus, XCircle } from 'lucide-react';
 import { columns } from './columns';
 
 interface Props {
@@ -30,31 +27,6 @@ interface Props {
 }
 
 export default function BorrowingIndex({ borrowings, filters, canManageBorrowings }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const [status, setStatus] = useState(filters.status || 'all');
-
-    const handleSearch = () => {
-        router.get(
-            route('equipment-users.index'),
-            {
-                search: search || undefined,
-                status: status !== 'all' ? status : undefined,
-            },
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
-
-    const clearFilters = () => {
-        setSearch('');
-        setStatus('all');
-        router.get(route('equipment-users.index'), {}, { replace: true });
-    };
-
-    const hasActiveFilters = search || status !== 'all';
-
     // Calculate statistics
     const pendingCount = borrowings.data.filter((b) => b.status === 'pending').length;
     const approvedCount = borrowings.data.filter((b) => b.status === 'approved').length;
@@ -124,64 +96,30 @@ export default function BorrowingIndex({ borrowings, filters, canManageBorrowing
                 </div>
 
                 {/* Filters */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className='flex items-center'>
-                            <Filter className='mr-2 h-4 w-4' />
-                            Filters
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className='grid gap-4 md:grid-cols-4'>
-                            <div className='relative md:col-span-2'>
-                                <Search className='absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground' />
-                                <Input
-                                    className='pl-9'
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                                    placeholder='Search borrowings...'
-                                    value={search}
-                                />
-                            </div>
-                            <Select onValueChange={setStatus} value={status}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder='All statuses' />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value='all'>All statuses</SelectItem>
-                                    <SelectItem value='pending'>Pending</SelectItem>
-                                    <SelectItem value='approved'>Approved</SelectItem>
-                                    <SelectItem value='cancelled'>Cancelled</SelectItem>
-                                    <SelectItem value='returned'>Returned</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <div className='flex space-x-2'>
-                                <Button onClick={handleSearch} size='sm'>
-                                    Search
-                                </Button>
-                                {hasActiveFilters && (
-                                    <Button onClick={clearFilters} size='sm' variant='outline'>
-                                        Clear
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                        {hasActiveFilters && (
-                            <div className='mt-4 flex flex-wrap gap-2'>
-                                {search && (
-                                    <Badge className='flex items-center gap-1' variant='secondary'>
-                                        Search: {search}
-                                    </Badge>
-                                )}
-                                {status && (
-                                    <Badge className='flex items-center gap-1' variant='secondary'>
-                                        Status: {status}
-                                    </Badge>
-                                )}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                <StandardFilters
+                    fields={[
+                        {
+                            key: 'search',
+                            label: 'Search',
+                            type: 'search',
+                            placeholder: 'Search borrowings...',
+                        },
+                        {
+                            key: 'status',
+                            label: 'Status',
+                            type: 'select',
+                            allLabel: 'All statuses',
+                            options: [
+                                { value: 'pending', label: 'Pending' },
+                                { value: 'approved', label: 'Approved' },
+                                { value: 'cancelled', label: 'Cancelled' },
+                                { value: 'returned', label: 'Returned' },
+                            ],
+                        },
+                    ]}
+                    filters={filters}
+                    routeName='equipment-users.index'
+                />
 
                 {/* Quick Actions for Admins */}
                 {canManageBorrowings && pendingCount > 0 && (
@@ -199,8 +137,8 @@ export default function BorrowingIndex({ borrowings, filters, canManageBorrowing
                             <Button
                                 className='mt-3'
                                 onClick={() => {
-                                    setStatus('pending');
-                                    handleSearch();
+                                    // This will be handled by StandardFilters component
+                                    window.location.href = route('equipment-users.index', { status: 'pending' });
                                 }}
                                 size='sm'
                                 variant='outline'
@@ -228,8 +166,7 @@ export default function BorrowingIndex({ borrowings, filters, canManageBorrowing
                             <Button
                                 className='mt-3'
                                 onClick={() => {
-                                    setStatus('approved');
-                                    handleSearch();
+                                    window.location.href = route('equipment-users.index', { status: 'approved' });
                                 }}
                                 size='sm'
                                 variant='outline'

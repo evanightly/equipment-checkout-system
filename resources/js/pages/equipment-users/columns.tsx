@@ -1,11 +1,8 @@
+import { EquipmentUserActions } from '@/components/equipment-user-actions';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EquipmentUser } from '@/types';
-import { Link, router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
-import { CheckCircle, Eye, MoreHorizontal, RotateCcw, XCircle } from 'lucide-react';
 
 export const columns: ColumnDef<EquipmentUser>[] = [
     {
@@ -164,62 +161,7 @@ export const columns: ColumnDef<EquipmentUser>[] = [
             const borrowing = row.original;
             const canManage = true; // This will be passed from props
 
-            const handleApprove = () => {
-                if (confirm('Are you sure you want to approve this borrowing request?')) {
-                    router.patch(route('equipment-users.approve', borrowing.id));
-                }
-            };
-
-            const handleReject = () => {
-                if (confirm('Are you sure you want to reject this borrowing request?')) {
-                    router.patch(route('equipment-users.reject', borrowing.id));
-                }
-            };
-
-            const handleReturn = () => {
-                if (confirm('Mark this equipment as returned?')) {
-                    router.patch(route('equipment-users.return', borrowing.id));
-                }
-            };
-
-            return (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button className='h-8 w-8 p-0' variant='ghost'>
-                            <span className='sr-only'>Open menu</span>
-                            <MoreHorizontal className='h-4 w-4' />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
-                        <DropdownMenuItem asChild>
-                            <Link href={route('equipment-users.show', borrowing.id)}>
-                                <Eye className='mr-2 h-4 w-4' />
-                                View Details
-                            </Link>
-                        </DropdownMenuItem>
-
-                        {canManage && borrowing.status === 'pending' && (
-                            <>
-                                <DropdownMenuItem onClick={handleApprove}>
-                                    <CheckCircle className='mr-2 h-4 w-4' />
-                                    Approve
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className='text-destructive focus:text-destructive' onClick={handleReject}>
-                                    <XCircle className='mr-2 h-4 w-4' />
-                                    Reject
-                                </DropdownMenuItem>
-                            </>
-                        )}
-
-                        {canManage && borrowing.status === 'approved' && !borrowing.returned_at && (
-                            <DropdownMenuItem onClick={handleReturn}>
-                                <RotateCcw className='mr-2 h-4 w-4' />
-                                Mark as Returned
-                            </DropdownMenuItem>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            );
+            return <EquipmentUserActions borrowing={borrowing} canManage={canManage} />;
         },
     },
 ];

@@ -2,8 +2,12 @@
 
 namespace App\Enums;
 
+use App\Traits\EnumToArray;
+
 enum EquipmentStatusEnum: string
 {
+    use EnumToArray;
+
     case AVAILABLE = 'available';
     case BORROWED = 'borrowed';
     case MAINTENANCE = 'maintenance';
