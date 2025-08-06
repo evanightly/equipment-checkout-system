@@ -1,8 +1,14 @@
 <?php
 
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('home');
+// Welcome page with dynamic data
+Route::get('/', [WelcomeController::class, 'index'])->name('home');
+
+// API endpoints for real-time data (optional)
+Route::get('/api/welcome/stats', [WelcomeController::class, 'stats'])->name('welcome.stats');
+Route::get('/api/welcome/health', [WelcomeController::class, 'health'])->name('welcome.health');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');
